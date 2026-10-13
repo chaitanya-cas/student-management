@@ -30,7 +30,7 @@ public class StudentController {
 	}
 
 	// Display the student registration form
-	@GetMapping("/student/new")
+	@GetMapping("/students/new")
 	public String showRegistrationForm(Model model) {
 
 		model.addAttribute("Student", new Student());
@@ -39,7 +39,7 @@ public class StudentController {
 	}
 
 	// Save Student information
-	@PostMapping("/student/save")
+	@PostMapping("/students/save")
 	public String saveStudent(@ModelAttribute("student") Student student) {
 
 		studentService.saveStudent(student);

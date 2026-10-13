@@ -123,13 +123,13 @@ pageEncoding="UTF-8" %>
         }
     }
 </style>
-```
+
 
 </head>
 
 <body>
 
-```
+
 <header class="navbar">
     <h2>Student Management</h2>
 
