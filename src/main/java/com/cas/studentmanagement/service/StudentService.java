@@ -60,4 +60,9 @@ public class StudentService {
 
         studentRepository.deleteById(id);
     }
+    
+    public List<Student> searchStudents(String keyword) {
+        return studentRepository.searchStudents(keyword.trim());
+    }
+    
 }

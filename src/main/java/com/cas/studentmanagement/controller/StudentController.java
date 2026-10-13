@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.cas.studentmanagement.entity.Student;
 import com.cas.studentmanagement.service.StudentService;
@@ -85,6 +86,22 @@ public class StudentController {
 		studentService.deleteStudent(id);
 
 		return "redirect:/students";
+	}
+	
+	//
+	@GetMapping("/students/search")
+	public String searchStudents(
+	        @RequestParam(defaultValue = "") String keyword,
+	        Model model) {
+
+	    model.addAttribute(
+	        "students",
+	        studentService.searchStudents(keyword)
+	    );
+
+	    model.addAttribute("keyword", keyword);
+
+	    return "student-list";
 	}
 
 }
