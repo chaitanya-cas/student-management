@@ -1,0 +1,23 @@
+# Maven build output
+target/
+
+# Eclipse
+.metadata/
+.project
+.classpath
+.settings/
+
+# IntelliJ
+.idea/
+*.iml
+
+# Operating system
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Local environment configuration
+.env
+application-local.properties
