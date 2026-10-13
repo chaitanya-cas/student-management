@@ -1,7 +1,6 @@
 package com.cas.studentmanagement.controller;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,92 +15,125 @@ import com.cas.studentmanagement.service.StudentService;
 @Controller
 public class StudentController {
 
-	private final StudentService studentService;
+    private final StudentService studentService;
 
-	public StudentController(StudentService studentService) {
-		super();
-		this.studentService = studentService;
-	}
+    // Constructor injection
+    public StudentController(StudentService studentService) {
+        this.studentService = studentService;
+    }
 
-	// Display the home page
-	@GetMapping("/")
-	public String home() {
+    // Dashboard
+    @GetMapping("/")
+    public String home(Model model) {
 
-		return "index";
-	}
+        model.addAttribute(
+                "totalStudents",
+                studentService.getTotalStudents()
+        );
 
-	// Display the student registration form
-	@GetMapping("/students/new")
-	public String showRegistrationForm(Model model) {
+        model.addAttribute(
+                "totalFees",
+                studentService.getTotalFees()
+        );
 
-		model.addAttribute("Student", new Student());
+        return "index";
+    }
 
-		return "add-student";
-	}
+    // Display registration form
+    @GetMapping("/students/new")
+    public String showRegistrationForm(Model model) {
 
-	// Save Student information
-	@PostMapping("/students/save")
-	public String saveStudent(@ModelAttribute("student") Student student) {
+        model.addAttribute("student", new Student());
 
-		studentService.saveStudent(student);
+        return "add-student";
+    }
 
-		return "redirect:/students";
-	}
+    // Save student
+    @PostMapping("/students/save")
+    public String saveStudent(
+            @ModelAttribute("student") Student student) {
 
-	// Display all students
-	@GetMapping("/students")
-	public String getAllStudents(Model model) {
+        studentService.saveStudent(student);
 
-		List<Student> students = studentService.getAllStudents();
+        return "redirect:/students";
+    }
 
-		model.addAttribute("students", students);
+    // Display students with pagination, sorting and search
+    @GetMapping("/students")
+    public String getStudents(
+            @RequestParam(defaultValue = "") String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String direction,
+            Model model) {
 
-		return "student-list";
-	}
+        // Prevent invalid pagination values
+        page = Math.max(page, 0);
+        size = Math.max(1, Math.min(size, 50));
 
-	// Display the edit form
-	@GetMapping("/students/edit/{id}")
-	public String showEditForm(@PathVariable Integer id, Model model) {
+        Page<Student> studentPage;
 
-		Student student = studentService.getStudentById(id);
+        if (keyword == null || keyword.isBlank()) {
 
-		model.addAttribute("student", student);
+            studentPage = studentService.getStudentsPaginated(
+                    page, size, sortBy, direction
+            );
 
-		return "edit-student";
-	}
+        } else {
 
-	// Update student information
-	@PostMapping("/students/update/{id}")
-	public String updateStudent(@PathVariable Integer id, @ModelAttribute("student") Student student) {
+            studentPage = studentService.searchStudentsPaginated(
+                    keyword, page, size, sortBy, direction
+            );
+        }
 
-		studentService.updateStudent(id, student);
+        // Data displayed in the JSP
+        model.addAttribute("students", studentPage.getContent());
+        model.addAttribute("studentPage", studentPage);
 
-		return "redirect:/students";
-	}
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", studentPage.getTotalPages());
+        model.addAttribute("totalItems", studentPage.getTotalElements());
 
-	// Delete a student
-	@PostMapping("/students/delete/{id}")
-	public String deleteStudent(@PathVariable Integer id) {
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("size", size);
+        model.addAttribute("sortBy", sortBy);
+        model.addAttribute("direction", direction);
 
-		studentService.deleteStudent(id);
+        return "student-list";
+    }
 
-		return "redirect:/students";
-	}
-	
-	//
-	@GetMapping("/students/search")
-	public String searchStudents(
-	        @RequestParam(defaultValue = "") String keyword,
-	        Model model) {
+    // Edit form
+    @GetMapping("/students/edit/{id}")
+    public String showEditForm(
+            @PathVariable Integer id,
+            Model model) {
 
-	    model.addAttribute(
-	        "students",
-	        studentService.searchStudents(keyword)
-	    );
+        Student student = studentService.getStudentById(id);
 
-	    model.addAttribute("keyword", keyword);
+        model.addAttribute("student", student);
 
-	    return "student-list";
-	}
+        return "edit-student";
+    }
+
+    // Update student
+    @PostMapping("/students/update/{id}")
+    public String updateStudent(
+            @PathVariable Integer id,
+            @ModelAttribute("student") Student student) {
+
+        studentService.updateStudent(id, student);
+
+        return "redirect:/students";
+    }
+
+    // Delete student
+    @PostMapping("/students/delete/{id}")
+    public String deleteStudent(@PathVariable Integer id) {
+
+        studentService.deleteStudent(id);
+
+        return "redirect:/students";
+    }
 
 }
